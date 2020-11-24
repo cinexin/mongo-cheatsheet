@@ -2,19 +2,21 @@
 
 ## Regular expressions
 
+ie: Fetch the products which description contains "BOOK" string
+
 ```sql
 SELECT *
 FROM Products p
 WHERE p.description LIKE '%BOOK%'
 ```
 
-ie: Fetch the products which description contains "BOOK" string
-
 ```javascript
-db.getCollection('Products').find({"description": /.*BOOK.*/})
+db.getCollection('products').find({"description": /.*BOOK.*/})
 ```
 
 ## Get elements that are "in" / "not in" a nested collection
+
+ie: Fetch the shopping carts in which list of products "5cd1a0475334fe0009133102" is / is not contained
 
 ```sql
 SELECT *
@@ -23,25 +25,27 @@ WHERE s.id = sp.shoppingCartId
     AND sp.productId = "5cd1a0475334fe0009133102"
 ```
 
-ie: Fetch the shopping carts in which list of products "5cd1a0475334fe0009133102" is / is not contained
-
 ```javascript
-db.getCollection('ShoppingCarts').find({"shoppingCartProducts": { $in: ["5cd1a0475334fe0009133102"]}})
+db.getCollection('shoppingCarts').find({
+    "shoppingCartProducts": {
+         $in: ["5cd1a0475334fe0009133102"]
+    }
+})
 ```
 
 ```javascript
-db.getCollection('ShoppingCarts').find({"shoppingCartProducts": { $nin: ["5cd1a0475334fe0009133102"]}})
+db.getCollection('shoppingCarts').find({"shoppingCartProducts": { $nin: ["5cd1a0475334fe0009133102"]}})
 ```
-
-ie: Fetch the wallets in which list of owners "5cd1a0475334fe0009133102" is not contained
 
 ## Filter by a field in a nested object
 
+ie: Fetch the accounts which "mobile -> number" is "652272058"
+
 ```javascript
-db.getCollection('Accounts').find({'mobile.number': '652272058'})
+db.getCollection('accounts').find({'mobile.number': '652272058'})
 ```
 
-ie: Fetch the accounts which "mobile -> number" is "652272058"
+ie: Get the accounts which firstName 'Migue' or 'Angel'
 
 ## Using boolean operators (and, or...)
 
@@ -51,10 +55,8 @@ FROM Accounts
 WHERE "firstName" = "Migue" OR "firstName" = "Angel"
 ```
 
-ie: Get the accounts which firstName 'Migue' or 'Angel'
-
 ```javascript
-db.getCollection('Accounts').find({$or: [
+db.getCollection('accounts').find({$or: [
     {'firstName': 'Migue'},
     {'firstName':'Angel'}
 ]})
@@ -78,7 +80,7 @@ WHERE EXISTS (
 ```
 
 ```javascript
-db.getCollection("ShoppingCarts").find({$and: [
+db.getCollection("shoppingCarts").find({$and: [
     {"shoppingCartsOwners": { $in: ["5cd1a0475334fe0009133102"]}},
     {"shoppingCartsOwners": {$size: 2}}
 ]})
@@ -94,7 +96,7 @@ FROM Accounts
 ```
 
 ```javascript
-db.getCollection('Accounts').find(
+db.getCollection('accounts').find(
     {},
     {"_id": 0, "createdAt": 1, "updatedAt": 1}
 )
@@ -109,7 +111,7 @@ WHERE s.id = sp.shoppingCartId
 ```
 
 ```javascript
-db.ShoppingCarts.find({}, {shoppingCartProducts: 1})
+db.shoppingCarts.find({}, {shoppingCartProducts: 1})
 ```
 
 ie: Display only the "storedProducts" field of "inventory" document
@@ -119,13 +121,13 @@ _Note that mongo "\_id" attribute will be always in the list of documents unless
 ## Select records which some collection is empty / not empty
 
 ```javascript
-db.ShoppingCarts.find({ shoppingCartProducts: { $exists: true, $not: {$size: 0} } })
+db.shoppingCarts.find({ shoppingCartProducts: { $exists: true, $not: {$size: 0} } })
 ```
 
 ie: Find inventories which products list is not empty
 
 ```javascript
-db.ShoppingCarts.find({ shoppingCartProducts: { $exists: true, $size: 0 } })
+db.shoppingCarts.find({ shoppingCartProducts: { $exists: true, $size: 0 } })
 ```
 
 ie: Find inventories which products list is empty
@@ -142,7 +144,7 @@ WHERE s.id = sp.shoppingCartId AND s.status = "CONFIRMED"
 ie: Fetch the distinct product Id's of shopping carts which status is "CONFIRMED"
 
 ```javascript
-db.ShoppingCarts.distinct("productId", {status: "CONFIRMED"})
+db.shoppingCarts.distinct("productId", {status: "CONFIRMED"})
 ```
 
 ## Group by / Having clauses (Aggregations in Mongo)
@@ -158,7 +160,7 @@ HAVING COUNT(*) > 1
 ie: Fetch all records from "ShoppingCartProducts" document grouping by fields: "productId", "month" and "year" having its count > 1
 
 ```javascript
-db.ShoppingCarts
+db.shoppingCarts
     .aggregate(
         [
             {
@@ -191,12 +193,14 @@ HAVING COUNT(*) > 1
 ```
 
 ```javascript
-db.ShoppingCarts.aggregate([
+db.shoppingCarts.aggregate([
     {
         "$group": {
             _id: {
                 lastUpdatedUTC: {
-                    $dateToString: { format: "%Y-%m-%d", date: "$lastUpdatedTimestamp" }
+                    $dateToString: { 
+                        format: "%Y-%m-%d", date: "$lastUpdatedTimestamp"
+                    }
                 },
                 status: "$status"
             },
@@ -250,7 +254,7 @@ ie: Give me the ACTIVE subscriptions that have a promo with priority > 20 on its
 ```
 
 ```javascript
-db.Subscriptions.find(
+db.subscriptions.find(
     {
         status: 'ACTIVE',
         promotions: {$elemMatch: {"priority": {$gt: 20}}}
@@ -269,7 +273,7 @@ ie: Update the Products which name contains _Extended_:
 ```
 
 ```javascript
-db.Products.updateMany(
+db.products.updateMany(
     {name: /Extended/},
     {$set: {hidden: true}}
 );
@@ -280,7 +284,7 @@ db.Products.updateMany(
 ie: Update benefit status of promotions that match some criteria
 
 ```sql
-UPDATE Subscriptions s, PROMOTIONS p
+UPDATE subscriptions s, promotions p
 SET p.status = 'BENEFIT_FULFILLED_OK'
 WHERE s.promoId = promos.id
     AND s.status = 'ACTIVE'
@@ -288,7 +292,7 @@ WHERE s.promoId = promos.id
 ```
 
 ````javascript
-db.Products.updateMany(
+db.products.updateMany(
     {
         status: 'ACTIVE',
         promotions: {
