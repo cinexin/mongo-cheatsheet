@@ -229,7 +229,7 @@ ie: Give me the ACTIVE Subscriptions that have a promo with code = "PROMO 300" o
 ```
 
 ```javascript
-db.Subscriptions.find(
+db.subscriptions.find(
     {
         status: 'ACTIVE',
         promotions: {$elemMatch: {"promotionCode": "PROMO 300"}}
@@ -292,7 +292,7 @@ WHERE s.promoId = promos.id
 ```
 
 ````javascript
-db.products.updateMany(
+db.subscriptions.updateMany(
     {
         status: 'ACTIVE',
         promotions: {
